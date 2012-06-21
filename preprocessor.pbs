@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -V
+#PBS -N job-preprocessor
+#PBS -A ASync011
+#PBS -M joanna.huang@synchrotron.org.au -m abe
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=00:20:00
+
+cd $PBS_O_WORKDIR
+
+#--------- preprocessor.pbs ---------------------------------------------------#
+# This is a PBS job to run the following models in order on SAS experimental 
+# data file specified,
+#
+#     1. AUTORG
+#     2. DATGNOM
+#     3. DATPOROD
+#     4. DAMMIF in "slow" mode
+#
+# Input file: 
+# 
+#     1. The SAS experimental data files (*.dat) in ASCII format.
+#
+# Output file: 
+#
+#     1. GNOM output file (*_dammif.out)
+#     2. DAMMIF output files (http://www.embl-hamburg.de/biosaxs/manual_dammif.html#output)
+#        - *_0-0.pdb
+#        - *_0-1.pdb
+#        - *_0-1r.pdb
+#        - *_0.fir
+#        - *_0.fit
+#        - *_0.in
+#        - *_0.log
+#
+# To run preprocessor.pbs using qsub:
+#
+#     qsub -v dat_file=DAT_FILE,output_path=OUTPUT_PATH preprocessor.pbs
+#
+# where 
+#
+#     DAT_FILE      is a full path of your SAS experimental data file to be used 
+#                   for models.
+#     OUTPUT_PATH   is a full directory path for all output files generated 
+#                   during pipeline modelling. 
+
+
+python /home/saxswaxs/ASync011/as-saxs/pipeline/preprocessor.py -f $dat_file -o $output_path
