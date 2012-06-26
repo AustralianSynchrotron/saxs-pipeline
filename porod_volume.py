@@ -13,7 +13,7 @@ def main():
     
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:o:s:d:h:", ["datfile", "output", "ssh", "destination", "harvest"])
+        opts, args = getopt.getopt(sys.argv[1:], "f:o:s:d:h:", ["file", "output", "ssh", "destination", "harvest"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognised"
@@ -22,7 +22,7 @@ def main():
 
     # get options, example: -f /full/path/to/sample.dat        
     for o, a in opts:
-        if o in ("-d", "--datfile"):
+        if o in ("-f", "--file"):
             datfile = str(a)
         if o in ("-o", "--output"):
             output_path = str(a)
@@ -118,7 +118,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script):
 def usage():
     print 'Usage: %s [OPTIONS] -f /full/path/filename.dat -o /output/full/path/ -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py \n' % (sys.argv[0])
     print '''
--d --datfile      The full path of your SAXS experimental data file to be used 
+-f --file         The full path of your SAXS experimental data file to be used 
                   for models.
 -o --output       The full directory path for all output files generated during 
                   pipeline modelling. 
