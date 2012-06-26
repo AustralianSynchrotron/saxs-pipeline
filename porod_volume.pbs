@@ -43,4 +43,4 @@ cd $PBS_O_WORKDIR
 #     HARVEST       It is a remote full path to trigger pipeline harvest script
 #                   on remote SAXS production server.
 
-python "$pipeline_home"/porod_volume.py -f $dat_file -o $output_path -s $prod_ssh_access -d $prod_scp_dest -h $prod_pipeline_harvest
+python "$pipeline_home"/porod_volume.py -d $dat_file -o $output_path -s $prod_ssh_access -d $prod_scp_dest -h $prod_pipeline_harvest
