@@ -34,9 +34,11 @@ def main():
 
 def processDatFile(infile):
   
+    print '#---- monitor the existence of *.in file -----#'
     start_time = time.time()
     while (1):
         if os.path.isfile(infile):
+            print '#---- *.in file exists -----#'
             # remove random seed line from infile (*.in)
             lines = open(infile, 'r').readlines()
             new_lines = []
@@ -46,6 +48,8 @@ def processDatFile(infile):
                 else:
                     new_lines.append(line)
             open(infile, 'w').writelines(new_lines)
+            print '#---- initial random seed removed from *.in file  -----#'
+            print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
             break
         else:
             time.sleep(1)

@@ -104,6 +104,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script):
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, error_output) = process.communicate()
     print ' '.join(command_list)
+    print '\n'
     
     # trigger production harvest script 
     print '#---- production harvest -----------#'

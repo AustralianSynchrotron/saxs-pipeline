@@ -32,15 +32,19 @@ def main():
 
 def processDatFile(outfile):
   
+    print '#---- monitor the existence of *.out file -----#'
     start_time = time.time()
     while (1):
         # copy gnom out file (*.out) to *_dammif.out once it got generated.
         if os.path.isfile(outfile):
+            print '#---- *.out file exists -----#'
             prefix = outfile[:-4]
             dammif_outfile = prefix + "_dammif.out" 
+            print '#---- copy *.out file to *_dammif.out file -----#'
             shutil.copyfile(outfile, dammif_outfile)
             
             # found gnom out file then terminate this script execution
+            print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
             break
         # keep waiting since the gnom out file hasn't generated yet.
         else:

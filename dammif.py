@@ -62,7 +62,7 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
   
     # dammif modelling
     # dammif --prefix="$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} --mode=interactive --symmetry=P1 --unit=n "$OUTPUT_FILE_PREFIX"_dammif.out < "$OUTPUT_FILE_PREFIX"_0.in 
-  
+    print '#---- dammif modelling -------#'
     if mode.upper() == "SLOW":
         command_list = ['dammif', '--prefix=%s' % prefix, '--mode=slow', '--symmetry=P1', '--unit=n', outfile]
     elif mode.upper() == "INTERACTIVE":
@@ -71,6 +71,7 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, error_output) = process.communicate()
     print ' '.join(command_list)
+    print '\n'
   
     # monitor output files (*-1.pdb)
     start_time = time.time()
@@ -86,28 +87,35 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
             search = 'Total excluded DAM volume'
             for line in pdbfile:
                 if line.find(search) > -1:
+                    print '#---- Total excluded DAM volume value found -------#'
                     found_volume = True
                     # extract value
                     value = line.split(':')[1].strip(' ')
                     # create a file with dammif volume value
+                    print '#---- create dammif volume file -------#'
                     dammif_volume_file_path = prefix + '_dammif_volume'
                     valuefile = open(dammif_volume_file_path, 'w')
                     valuefile.write(value)
                     valuefile.close()
                     # ssh copy file to production server
+                    print '#---- copy dammif volume file-------#'
                     scp_dest_path = ssh_access + ":" + scp_dest
                     command_list = ['scp', dammif_volume_file_path, scp_dest_path]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)
+                    print '\n'
                     # trigger production harvest script 
+                    print '#---- production harvest -----------#'
                     filename_prefix = prefix.split('/')[-1] 
                     file_to_harvest = scp_dest_path + filename_prefix + '_dammif_volume'
                     command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dammif_volume', '-f', file_to_harvest]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)
+                    print '\n'
                     # exit scanning line in pdbfile
+                    print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
                     break
             pdbfile.close()
 
