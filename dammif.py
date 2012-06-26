@@ -65,13 +65,16 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
     print '#---- dammif modelling -------#'
     if mode.upper() == "SLOW":
         command_list = ['dammif', '--prefix=%s' % prefix, '--mode=slow', '--symmetry=P1', '--unit=n', outfile]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        print ' '.join(command_list)
+        print '\n'
     elif mode.upper() == "INTERACTIVE":
-        command_list = ['dammif', '--prefix=%s' % prefix, '--mode=interactive', '--symmetry=P1', '--unit=n', outfile, '<', infile]
-        
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    print ' '.join(command_list)
-    print '\n'
+        # replace subprocess.Popen with os.system due to a getopt error of "too many arguments".
+        command = 'dammif --prefix=%s --mode=interactive --symmetry=P1 --unit=n %s < %s' % (prefix, outfile, infile)
+        os.system(command)
+        print command
+        print '\n'
   
     # monitor output files (*-1.pdb)
     start_time = time.time()
