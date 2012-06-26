@@ -16,7 +16,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], "i:", ["infile"])
     except getopt.GetoptError, err:
         # print help information and exit:
-        print str(err) # will print something like "option -a not recognized"
+        print str(err) # will print something like "option -a not recognised"
         usage()
         sys.exit(2)
 
@@ -37,6 +37,7 @@ def processDatFile(infile):
     start_time = time.time()
     while (1):
         if os.path.isfile(infile):
+            # remove random seed line from infile (*.in)
             lines = open(infile, 'r').readlines()
             new_lines = []
             for line in lines:
@@ -49,7 +50,7 @@ def processDatFile(infile):
         else:
             time.sleep(1)
         # exceed 100 seconds then enforce to finish
-        if time.time() -  start_time > 100:
+        if time.time() - start_time > 100:
             break
       
 
@@ -57,8 +58,8 @@ def processDatFile(infile):
 def usage():
     print 'Usage: %s [OPTIONS] -i /full/path/filename_0.in \n' % (sys.argv[0])
     print '''
--i --infile    the full path of the .in file to be used for re-run 9 DAMMIF to
-               get a chained PDB output.
+-i --infile    the full path of the .in file to be used as input parameters for 
+               re-run 9 DAMMIF to get a chained PDB output.
 
 
 '''

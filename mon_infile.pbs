@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -V
-#PBS -N job-input-parameters
+#PBS -N job-mon-infile
 #PBS -A ASync011
 #PBS -M joanna.huang@synchrotron.org.au -m abe
 #PBS -l nodes=1:ppn=1
@@ -8,14 +8,14 @@
 
 cd $PBS_O_WORKDIR
 
-#--------- input_parameters.pbs -----------------------------------------------#
+#--------- mon_infile.pbs -----------------------------------------------#
 # This is a PBS job to get dammif output file (*.in) from previous run of dammif
 # as the same set of input parameters (excluding random seed) to re-run 9 DAMMIF
 # to get a chained PDB output.
 #
-# To run input_parameters.pbs using qsub:
+# To run mon_infile.pbs using qsub:
 #
-#     qsub -v dat_file=DAT_FILE,output_path=OUTPUT_PATH preprocessor.pbs
+#     qsub -v dat_file=DAT_FILE,output_path=OUTPUT_PATH,pipeline_home=PIPELINE_HOME mon_infile.pbs
 #
 # where 
 #
@@ -23,6 +23,8 @@ cd $PBS_O_WORKDIR
 #                   for models.
 #     OUTPUT_PATH   is a full directory path for all output files generated 
 #                   during pipeline modelling. 
+#     PIPELINE_HOME A full absolute path of home directory of Pipeline source 
+#                   code on MASSIVE.
 
 INPUT_FILE_FULL_PATH=$dat_file
 OUTPUT_PATH=$output_path
@@ -30,4 +32,4 @@ DAT_FILE=${INPUT_FILE_FULL_PATH##*/}
 DAT_FILE_NAME=${DAT_FILE%.*}
 OUTPUT_FILE_PREFIX="$OUTPUT_PATH""$DAT_FILE_NAME"
 
-python /home/saxswaxs/ASync011/as-saxs/pipeline/input_parameters.py -i "$OUTPUT_FILE_PREFIX"_0.in
+python "$pipeline_home"/mon_infile.py -i "$OUTPUT_FILE_PREFIX"_0.in

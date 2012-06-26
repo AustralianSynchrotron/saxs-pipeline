@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -V
-#PBS -N job-dammif-array
+#PBS -N job-dammif
 #PBS -A ASync011
 #PBS -M joanna.huang@synchrotron.org.au -m abe
 #PBS -l nodes=1:ppn=1
@@ -9,19 +9,49 @@
 cd $PBS_O_WORKDIR
 
 #--------- dammif.pbs ---------------------------------------------------------#
-# This is a PBS job to run DAMMIF modelling in "interactive" mode on SAS 
-# experimental data file specified.
+# This is a PBS job to run DAMMIF modelling in specified mode on indicated SAXS 
+# experimental data file (*.dat).
+#
+# Input file: 
+# 
+#     1. GNOM output file (*_dammif.out).
+#     2. DAMMIF .in file to be used as input parameters for re-run DAMMIF to
+#        get a chained PDB output. (Optional)
+#
+# Output file: 
+#
+#     1. DAMMIF output files (http://www.embl-hamburg.de/biosaxs/manual_dammif.html#output), eg.,
+#        - *_0-0.pdb
+#        - *_0-1.pdb
+#        - *_0-1r.pdb
+#        - *_0.fir
+#        - *_0.fit
+#        - *_0.in
+#        - *_0.log
 #
 # To run dammif.pbs using qsub:
 #
-#     qsub -v dat_file=DAT_FILE,output_path=OUTPUT_PATH dammif.pbs
+#     qsub -t ARRAY_REQUEST -v dat_file=DAT_FILE,output_path=OUTPUT_PATH,pipeline_home=PIPELINE_HOME,mode=MODE,prod_ssh_access=SSH_ACCESS,prod_scp_dest=SCP_DEST,prod_pipeline_harvest=HARVEST dammif.pbs
 #
 # where 
+# 
+#     ARRAY_REQUEST Specifies the task ids of a job array. Single task arrays 
+#                   are allowed. 
 #
 #     DAT_FILE      is a full path of your SAS experimental data file to be used 
 #                   for models.
 #     OUTPUT_PATH   is a full directory path for all output files generated 
-#                   during pipeline modelling. 
+#                   during pipeline modelling.
+#     PIPELINE_HOME A full absolute path of home directory of Pipeline source 
+#                   code on MASSIVE.
+#     MODE          Configuration of the annealing procedure, one of FAST, SLOW, 
+#                   or INTERACTIVE. Default is INTERACTIVE.
+#     SSH_ACCESS    A string of ssh username and remote hostname used to connect
+#                   to SAXS production server.
+#     SCP_DEST      It is a remote full directory path for this pipeline script
+#                   to copy output files back to remote SAXS production server.
+#     HARVEST       It is a remote full path to trigger pipeline harvest script
+#                   on remote SAXS production server.
 
 INPUT_FILE_FULL_PATH=$dat_file
 OUTPUT_PATH=$output_path
@@ -29,5 +59,4 @@ DAT_FILE=${INPUT_FILE_FULL_PATH##*/}
 DAT_FILE_NAME=${DAT_FILE%.*}
 OUTPUT_FILE_PREFIX="$OUTPUT_PATH""$DAT_FILE_NAME"
 
-#dammif --prefix="$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} --mode=interactive --symmetry=P1 --unit=n "$OUTPUT_FILE_PREFIX"_dammif.out < "$OUTPUT_FILE_PREFIX"_0.in 
-python /home/saxswaxs/ASync011/as-saxs/pipeline/dammif.py -p "$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} -i "$OUTPUT_FILE_PREFIX"_0.in -o "$OUTPUT_FILE_PREFIX"_dammif.out
+python "$pipeline_home"/dammif.py -p "$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} -i "$OUTPUT_FILE_PREFIX"_0.in -o "$OUTPUT_FILE_PREFIX"_dammif.out -m "$mode" -s $prod_ssh_access -d $prod_scp_dest -h $prod_pipeline_harvest

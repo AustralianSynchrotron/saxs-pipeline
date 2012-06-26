@@ -4,7 +4,7 @@
 PROD_USER=joannah
 PROD_HOST=as-saxs-dev.synchrotron.org.au
 
-PROD_SOURCE_CODE_HOME=/home/joannah/as-saxs/pipeline
+PROD_SOURCE_CODE_HOME=/home/joannah/pipeline
 PROD_DATA_HOME=/home/joannah/production_data
 PROD_PIPELINE_HARVEST=pipeline_harvest.py
 
@@ -23,7 +23,7 @@ PROD_PIPELINE_HARVEST_PATH="$PROD_SOURCE_CODE_HOME"/"$PROD_PIPELINE_HARVEST"
 MASSIVE_USER=saxswaxs
 MASSIVE_HOST=m1.massive.org.au
 
-PIPELINE_SOURCE_CODE_HOME=/gpfs/M1Home/projects/ASync011/as-saxs/pipeline
+PIPELINE_SOURCE_CODE_HOME=/gpfs/M1Home/projects/ASync011/pipeline
 PIPELINE_DATA_HOME=/gpfs/M1Scratch/ASync011/pipeline_data
 PIPELINE_WRAPPER=pipeline_wrapper.sh
 
@@ -60,12 +60,15 @@ scp "$PROD_PIPELINE_SCP_FROM"/"$PROD_USER_DAT_FILE" "$MASSIVE_USER"@"$MASSIVE_HO
 #         remote SAXS production server.
 #   ARG5: A remote full path to trigger pipeline harvest script on remote SAXS 
 #         production server.
+#   ARG6: A full absolute path of home directory of Pipeline source code on 
+#         MASSIVE.
 
 ARG1="$PIPELINE_USER_INPUT_DIR"/"$PROD_USER_DAT_FILE"
 ARG2="$PIPELINE_USER_OUTPUT_DIR"
 ARG3="$PROD_SSH_ACCESS"
 ARG4="$PROD_PIPELINE_SCP_DEST"
 ARG5="$PROD_PIPELINE_HARVEST_PATH"
+ARG6="$PIPELINE_SOURCE_CODE_HOME"
 
 echo "#---- Start pipeline analysis"
-ssh "$MASSIVE_USER"@"$MASSIVE_HOST" bash "$PIPELINE_SOURCE_CODE_HOME"/"$PIPELINE_WRAPPER" "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5"
+ssh "$MASSIVE_USER"@"$MASSIVE_HOST" bash "$PIPELINE_SOURCE_CODE_HOME"/"$PIPELINE_WRAPPER" "$ARG1" "$ARG2" "$ARG3" "$ARG4" "$ARG5" "$ARG6"
