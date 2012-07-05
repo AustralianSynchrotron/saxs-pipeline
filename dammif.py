@@ -97,7 +97,6 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     # extract value
                     value = line.split(':')[1].strip(' ')
                     print value
-                    print '\n'
                     # create a file with dammif volume value
                     print '#---- create dammif volume file -------#'
                     dammif_volume_file_path = prefix + '_dammif_volume'
@@ -105,7 +104,6 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     valuefile.write(value)
                     valuefile.close()
                     print dammif_volume_file_path
-                    print '\n'
                     # ssh copy file to production server
                     print '#---- copy dammif volume file-------#'
                     scp_dest_path = ssh_access + ":" + scp_dest
@@ -113,7 +111,6 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)
-                    print '\n'
                     # trigger production harvest script 
                     print '#---- production harvest -----------#'
                     filename_prefix = prefix.split('/')[-1] 
@@ -121,12 +118,12 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dammif_volume', '-f', file_to_harvest]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
-                    print ' '.join(command_list)
-                    print '\n'                    
+                    print ' '.join(command_list)                 
                     break
             pdbfile.close()
             
             # ssh copy pdb file to production server
+            print '#---- scp *-1.pdb files -----------#'
             scp_dest_path = ssh_access + ":" + scp_dest
             command_list = ['scp', pdbfile_path, scp_dest_path]
             process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
