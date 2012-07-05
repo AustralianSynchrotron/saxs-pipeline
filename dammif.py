@@ -78,28 +78,34 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
   
     # monitor output files (*-1.pdb)
     start_time = time.time()
-    found_volume = False
     pdbfile_path = prefix + "-1.pdb"
     fitfile_path = prefix + ".fit"
     while (1):
         
-        # monitor if "Total excluded DAM volume" value exists in output file *-1.pdb
-        # monitor the existence of dammif output file *-1.pdb file
-        if not found_volume and os.path.isfile(pdbfile_path):
+        # monitor if dammif modelling process has finished
+        # monitor the existence of dammif output file *.fit file which is generated in the end of dammif process.
+        # monitor the existence of dammif output file *-1.pdb file which holds DAM volume value.
+        if os.path.isfile(fitfile_path) and os.path.isfile(pdbfile_path):
+            # dammif modelling process has finished
+            
+            # monitor if "Total excluded DAM volume" value exists in output file *-1.pdb
             pdbfile = open(pdbfile_path, 'r')
             search = 'Total excluded DAM volume'
             for line in pdbfile:
                 if line.find(search) > -1:
                     print '#---- Total excluded DAM volume value found -------#'
-                    found_volume = True
                     # extract value
                     value = line.split(':')[1].strip(' ')
+                    print value
+                    print '\n'
                     # create a file with dammif volume value
                     print '#---- create dammif volume file -------#'
                     dammif_volume_file_path = prefix + '_dammif_volume'
                     valuefile = open(dammif_volume_file_path, 'w')
                     valuefile.write(value)
                     valuefile.close()
+                    print dammif_volume_file_path
+                    print '\n'
                     # ssh copy file to production server
                     print '#---- copy dammif volume file-------#'
                     scp_dest_path = ssh_access + ":" + scp_dest
@@ -116,28 +122,22 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)
-                    print '\n'
-                    # exit scanning line in pdbfile
-                    print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
+                    print '\n'                    
                     break
             pdbfile.close()
-
-
-        # monitor if dammif modelling process has finished
-        # monitor the existence of dammif output file *.fit file which is generated in the end of dammif process.
-        if os.path.isfile(fitfile_path) and os.path.isfile(pdbfile_path):
-            # dammif modelling process has finished
+            
             # ssh copy pdb file to production server
             scp_dest_path = ssh_access + ":" + scp_dest
             command_list = ['scp', pdbfile_path, scp_dest_path]
             process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             (output, error_output) = process.communicate()
             print ' '.join(command_list)
+            print '\n'
+            print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
             break
         else:
             # keep waiting
             time.sleep(1)
-
 
         # exceed 15 minutes then enforce to terminate this script execution
         if time.time() - start_time > 900:
