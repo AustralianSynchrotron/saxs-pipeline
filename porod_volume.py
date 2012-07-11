@@ -10,10 +10,11 @@ def main():
     ssh_access = ""
     scp_dest = ""
     harvest_script = ""
+    config = ""
     
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "f:o:s:d:h:", ["file", "output", "ssh", "destination", "harvest"])
+        opts, args = getopt.getopt(sys.argv[1:], "f:o:s:d:h:c:", ["file", "output", "ssh", "destination", "harvest", "config"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognised"
@@ -32,6 +33,8 @@ def main():
             scp_dest = str(a)
         if o in ("-h", "--harvest"):
             harvest_script = str(a)
+        if o in ("-c", "--config"):
+            config = str(a)
 
     if not datfile.endswith('.dat'):
         print "ERROR: *.dat file is expected as input file."
@@ -43,10 +46,10 @@ def main():
     if not scp_dest.endswith('/'):
         scp_dest += '/'
 
-    processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script)
+    processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, config)
 
 
-def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script):
+def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, config):
   
     # automatically computes Rg and I(0) using the Guinier approximation, 
     # estimates data quality, finds the beginning of the useful data range.
@@ -109,7 +112,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script):
     # trigger production harvest script 
     print '#---- production harvest -----------#'
     file_to_harvest = scp_dest + filename + '_porod_volume'
-    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'porod_volume', '-f', file_to_harvest]
+    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'porod_volume', '-f', file_to_harvest, '-c', config]
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, error_output) = process.communicate()
     print ' '.join(command_list)
@@ -118,7 +121,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script):
 
 
 def usage():
-    print 'Usage: %s [OPTIONS] -f /full/path/filename.dat -o /output/full/path/ -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py \n' % (sys.argv[0])
+    print 'Usage: %s [OPTIONS] -f /full/path/filename.dat -o /output/full/path/ -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py -c /full/path/configfile \n' % (sys.argv[0])
     print '''
 -f --file         The full path of your SAXS experimental data file to be used 
                   for models.
@@ -130,7 +133,7 @@ def usage():
                   output files back to remote SAXS production server.
 -h --harvest      A remote full path to trigger pipeline harvest script on 
                   remote SAXS production server.
-
+-c --config       A full absolute path of config file in auto-processor.
 
 '''
   

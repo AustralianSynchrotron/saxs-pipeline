@@ -16,9 +16,10 @@ def main():
     ssh_access = ""
     scp_dest = ""
     harvest_script = ""
+    config = ""
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:o:i:m:s:d:h:", ["prefix", "outfile", "infile", "mode", "ssh", "destination", "harvest"])
+        opts, args = getopt.getopt(sys.argv[1:], "p:o:i:m:s:d:h:c:", ["prefix", "outfile", "infile", "mode", "ssh", "destination", "harvest", "config"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -41,6 +42,8 @@ def main():
             scp_dest = str(a)
         if o in ("-h", "--harvest"):
             harvest_script = str(a)
+        if o in ("-c", "--config"):
+            config = str(a)
 
     if not outfile.endswith('.out'):
         print "ERROR: *.out file (GNOM output file) is expected as an input file."
@@ -55,10 +58,10 @@ def main():
         scp_dest += '/'
    
 
-    dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script)
+    dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config)
 
 
-def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
+def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config):
   
     # dammif modelling
     # dammif --prefix="$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} --mode=interactive --symmetry=P1 --unit=n "$OUTPUT_FILE_PREFIX"_dammif.out < "$OUTPUT_FILE_PREFIX"_0.in 
@@ -116,7 +119,7 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     print '#---- production harvest -----------#'
                     filename_prefix = prefix.split('/')[-1] 
                     file_to_harvest = scp_dest + filename_prefix + '_dam_volume'
-                    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dam_volume', '-f', file_to_harvest]
+                    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dam_volume', '-f', file_to_harvest, '-c', config]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)       
@@ -145,7 +148,7 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
 
 
 def usage():
-    print 'Usage: %s [OPTIONS] -p /full/path/filename -i /full/path/filename_0.in -o /full/path/filename.out -m slow -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py \n' % (sys.argv[0])
+    print 'Usage: %s [OPTIONS] -p /full/path/filename -i /full/path/filename_0.in -o /full/path/filename.out -m slow -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py -c /full/path/configfile \n' % (sys.argv[0])
     print '''
 -p --prefix    Prefix to prepend to output filenames (eg. "prefix"-1.pdb).   
                Should include absolute paths, all directory components must 
@@ -165,6 +168,7 @@ def usage():
                   output files back to remote SAXS production server.
 -h --harvest      A remote full path to trigger pipeline harvest script on 
                   remote SAXS production server.
+-c --config    A full absolute path of config file in auto-processor.
 '''
   
 

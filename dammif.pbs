@@ -59,4 +59,4 @@ DAT_FILE=${INPUT_FILE_FULL_PATH##*/}
 DAT_FILE_NAME=${DAT_FILE%.*}
 OUTPUT_FILE_PREFIX="$OUTPUT_PATH""$DAT_FILE_NAME"
 
-python "$pipeline_home"/dammif.py -p "$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} -i "$OUTPUT_FILE_PREFIX"_0.in -o "$OUTPUT_FILE_PREFIX"_dammif.out -m "$mode" -s $prod_ssh_access -d $prod_scp_dest -h $prod_pipeline_harvest
+python "$pipeline_home"/dammif.py -p "$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} -i "$OUTPUT_FILE_PREFIX"_0.in -o "$OUTPUT_FILE_PREFIX"_dammif.out -m "$mode" -s $prod_ssh_access -d $prod_scp_dest -h $prod_pipeline_harvest -c $prod_config
