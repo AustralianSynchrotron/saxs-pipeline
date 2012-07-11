@@ -99,26 +99,28 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
                     print value
                     # create a file with dammif volume value
                     print '#---- create dammif volume file -------#'
-                    dammif_volume_file_path = prefix + '_dammif_volume'
-                    valuefile = open(dammif_volume_file_path, 'w')
+                    dam_volume_file_path = prefix + '_dam_volume'
+                    valuefile = open(dam_volume_file_path, 'w')
                     valuefile.write(value)
                     valuefile.close()
-                    print dammif_volume_file_path
+                    print dam_volume_file_path + '\n'
                     # ssh copy file to production server
                     print '#---- copy dammif volume file-------#'
                     scp_dest_path = ssh_access + ":" + scp_dest
-                    command_list = ['scp', dammif_volume_file_path, scp_dest_path]
+                    command_list = ['scp', dam_volume_file_path, scp_dest_path]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
                     print ' '.join(command_list)
+                    print ''
                     # trigger production harvest script 
                     print '#---- production harvest -----------#'
                     filename_prefix = prefix.split('/')[-1] 
-                    file_to_harvest = scp_dest_path + filename_prefix + '_dammif_volume'
-                    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dammif_volume', '-f', file_to_harvest]
+                    file_to_harvest = scp_dest + filename_prefix + '_dam_volume'
+                    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'dam_volume', '-f', file_to_harvest]
                     process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     (output, error_output) = process.communicate()
-                    print ' '.join(command_list)                 
+                    print ' '.join(command_list)       
+                    print ''          
                     break
             pdbfile.close()
             
@@ -129,8 +131,8 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script):
             process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             (output, error_output) = process.communicate()
             print ' '.join(command_list)
-            print '\n'
-            print '#---- exit with total running time %s seconds -----#' % (time.time() - start_time)
+            print ''
+            print '#---- exit with total running time %s seconds -----#\n' % (time.time() - start_time)
             break
         else:
             # keep waiting
