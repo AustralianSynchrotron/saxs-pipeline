@@ -48,13 +48,13 @@ PROD_CONFIG=$7
 POROD_VOLUME=`qsub -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME,prod_ssh_access=$PROD_SSH_ACCESS,prod_scp_dest=$PROD_SCP_DEST,prod_pipeline_harvest=$PROD_PIPELINE_HARVEST,prod_config=$PROD_CONFIG $PIPELINE_SOURCE_CODE_HOME/porod_volume.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
 
 # mon_outfile to monitor the existence of GNOM output file (*.out)
-MON_OUTFILE=`qsub -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME $PIPELINE_SOURCE_CODE_HOME/mon_outfile.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
+MON_OUTFILE=`qsub -W depend=afterok:$POROD_VOLUME -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME $PIPELINE_SOURCE_CODE_HOME/mon_outfile.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
 
 # dammif in slow mode with 1 run
 DAMMIF_SLOW=`qsub -W depend=afterok:$MON_OUTFILE -t 0 -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME,mode=slow,prod_ssh_access=$PROD_SSH_ACCESS,prod_scp_dest=$PROD_SCP_DEST,prod_pipeline_harvest=$PROD_PIPELINE_HARVEST,prod_config=$PROD_CONFIG $PIPELINE_SOURCE_CODE_HOME/dammif.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
 
 # mon_infile to monitor and process input parameters from first dammif run
-MON_INFILE=`qsub -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME $PIPELINE_SOURCE_CODE_HOME/mon_infile.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
+MON_INFILE=`qsub -W depend=afterok:$POROD_VOLUME -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME $PIPELINE_SOURCE_CODE_HOME/mon_infile.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
 
 # dammif in interactive mode with 9 runs in parallel
 DAMMIF_INTERACTIVE=`qsub -W depend=afterok:$MON_INFILE -t 1-9 -v dat_file=$DAT_FILE,output_path=$OUTPUT_PATH,pipeline_home=$PIPELINE_SOURCE_CODE_HOME,mode=interactive,prod_ssh_access=$PROD_SSH_ACCESS,prod_scp_dest=$PROD_SCP_DEST,prod_pipeline_harvest=$PROD_PIPELINE_HARVEST,prod_config=$PROD_CONFIG $PIPELINE_SOURCE_CODE_HOME/dammif.pbs -e $OUTPUT_PATH -o $OUTPUT_PATH`
