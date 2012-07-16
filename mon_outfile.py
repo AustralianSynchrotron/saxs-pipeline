@@ -27,10 +27,22 @@ def main():
         print "ERROR: *.out file is expected as input file."
         sys.exit(2)
 
-    processDatFile(outfile)
+    # check if there autorg data error is
+    #outfile: avg_sub_sample_101_n2_40C_bic_dmpc_cfos_12p5mgml__dammif.out
+    #porod file: avg_sub_sample_101_n2_40C_bic_dmpc_cfos_12p5mgml__porod_volume
+    autorg_data_error = False
+    porod_file_path = outfile[:-11] + '_porod_volume'
+    porod_file = open(porod_file_path, 'r')
+    value = str(porod_file.read())
+    if value.startswith('AUTORG DATA ERROR'):
+        autorg_data_error = True
+    porod_file.close()
+    
+    if not autorg_data_error:
+        monitorOutFile(outfile)
 
 
-def processDatFile(outfile):
+def monitorOutFile(outfile):
   
     print '#---- monitor the existence of *.out file -----#'
     start_time = time.time()

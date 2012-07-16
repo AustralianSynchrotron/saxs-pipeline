@@ -62,35 +62,51 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
         
     # estimates Dmax, computes the distance distribution function p(r) and the 
     # regularized scattering curve.
-    print '#---- datgnom ----------------------#'    
-    valuePoints = output.split(" ")
-    rg = valuePoints[0]
-    skip = valuePoints[4]
-    try:
-        skip = int(skip)
-        skip = skip - 1
-    except ValueError:
-        print "Error happened when converting skip value into integer."
-    #eg: file="sample.dat" if input file is /input_path/sample.dat
-    file = datfile.split('/')[-1] 
-    if file.endswith('.dat'):
-        #eg: filename="sample" if input file is /input_path/sample.dat
-        filename = file[:-4] 
-    outfile = output_path + filename + '.out'
-    command_list = ['datgnom', '-r', str(rg), '-s', str(skip), '-o', outfile, datfile]
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    # it generates a gnom output file (*.out)
-    print ' '.join(command_list)
-    print output
+    print '#---- datgnom ----------------------#'
+    # check if there autorg data error is, all zero values in output fields
+    autorg_data_error = False
+    if output.startswith('0 0 0 0 0 0 0 0'):
+        autorg_data_error = True
+    
+    if not autorg_data_error:
+        valuePoints = output.split(" ")
+        rg = valuePoints[0]
+        skip = valuePoints[4]
+        try:
+            skip = int(skip)
+            if skip > 0:
+                skip = skip - 1
+            else:
+                skip = 0
+        except ValueError:
+            print "Error happened when converting skip value into integer."
+        #eg: file="sample.dat" if input file is /input_path/sample.dat
+        file = datfile.split('/')[-1] 
+        if file.endswith('.dat'):
+            #eg: filename="sample" if input file is /input_path/sample.dat
+            filename = file[:-4] 
+        outfile = output_path + filename + '.out'
+        command_list = ['datgnom', '-r', str(rg), '-s', str(skip), '-o', outfile, datfile]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        # it generates a gnom output file (*.out)
+        print ' '.join(command_list)
+        print output
+    else:
+        print "Error: AUTORG data error which got zero value in individual field from AUTORG output."
+        print "DATGNOM model skipped."
       
     # computes Porod volume from the regularised scattering curve.
     print '#---- datporod ---------------------#' 
-    command_list = ['datporod', outfile]
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    print ' '.join(command_list)
-    print output
+    if not autorg_data_error:
+        command_list = ['datporod', outfile]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        print ' '.join(command_list)
+        print output
+    else:
+        print "Error: AUTORG data error which got zero value in individual field from AUTORG output."
+        print "DATPOROD model skipped."
   
   
     # create and ssh copy file of porod volume back to production
@@ -98,7 +114,10 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     # create file with porod valume value
     porod_file_path = output_path + filename + '_porod_volume'
     porod_file = open(porod_file_path, 'w')
-    value = str(output).strip(' ').split(' ')[0]
+    if not autorg_data_error:
+        value = str(output).strip(' ').split(' ')[0]
+    else:
+        value = "AUTORG DATA ERROR"
     porod_file.write(value)
     porod_file.close()
     # ssh copy file back to production
