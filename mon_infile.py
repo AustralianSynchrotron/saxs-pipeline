@@ -29,22 +29,7 @@ def main():
         print "ERROR: *.in file is expected as input file."
         sys.exit(2)
 
-    # check if there autorg data error is
-    #infile: avg_sub_sample_101_n2_40C_bic_dmpc_cfos_12p5mgml__0.in
-    #porod file: avg_sub_sample_101_n2_40C_bic_dmpc_cfos_12p5mgml__porod_volume
-    autorg_data_error = False
-    porod_file_path = infile[:-5] + '_porod_volume'
-    try:
-        porod_file = open(porod_file_path, 'r')
-        value = str(porod_file.read())
-        if value.startswith('AUTORG DATA ERROR'):
-            autorg_data_error = True
-        porod_file.close()
-    except IOError, e:
-        print "ERROR: No file: %s" % (porod_file_path)
-    
-    if not autorg_data_error:
-        monitorInFile(infile)
+    monitorInFile(infile)
 
 
 def monitorInFile(infile):

@@ -72,7 +72,12 @@ def main():
         print "ERROR: No file: %s" % (porod_file_path)
     
     if not autorg_data_error:
-        dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config)
+        if mode.upper() == "INTERACTIVE":
+            if os.path.isfile(infile) and os.path.isfile(outfile):
+                dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config)
+        elif mode.upper() == "SLOW": 
+            if os.path.isfile(outfile):
+                dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config)
 
 
 def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config):
