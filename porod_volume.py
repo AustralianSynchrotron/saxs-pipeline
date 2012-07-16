@@ -68,6 +68,13 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     if output.startswith('0 0 0 0 0 0 0 0'):
         autorg_data_error = True
     
+    # get file name
+    #eg: file="sample.dat" if input file is /input_path/sample.dat
+    file = datfile.split('/')[-1] 
+    if file.endswith('.dat'):
+        #eg: filename="sample" if input file is /input_path/sample.dat
+            filename = file[:-4] 
+    
     if not autorg_data_error:
         valuePoints = output.split(" ")
         rg = valuePoints[0]
@@ -80,11 +87,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
                 skip = 0
         except ValueError:
             print "Error happened when converting skip value into integer."
-        #eg: file="sample.dat" if input file is /input_path/sample.dat
-        file = datfile.split('/')[-1] 
-        if file.endswith('.dat'):
-            #eg: filename="sample" if input file is /input_path/sample.dat
-            filename = file[:-4] 
+        
         outfile = output_path + filename + '.out'
         command_list = ['datgnom', '-r', str(rg), '-s', str(skip), '-o', outfile, datfile]
         process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
