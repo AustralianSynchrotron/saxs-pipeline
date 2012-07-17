@@ -6,6 +6,18 @@ import os
 import time
 import subprocess
 import sys
+import traceback
+
+# Set logging
+import logging
+path = str(os.path.abspath(sys.argv[0]))
+logfile = path[:path.rfind('/')] + '/dammif.log'
+log = logging.getLogger(logfile)
+hdlr = logging.StreamHandler(sys.stderr)
+formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+hdlr.setFormatter(formatter)
+log.addHandler(hdlr)
+log.setLevel(2)
 
 
 def main():
@@ -69,8 +81,10 @@ def main():
             autorg_data_error = True
         porod_file.close()
     except IOError, e:
-        print "ERROR: No file: %s" % (porod_file_path)
-    
+        msg = "ERROR: No file: %s" % (porod_file_path)
+        print msg
+        log.error(msg)
+        
     if not autorg_data_error:
         if mode.upper() == "INTERACTIVE":
             if os.path.isfile(infile) and os.path.isfile(outfile):
@@ -100,6 +114,8 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, 
   
     # monitor output files (*-1.pdb)
     start_time = time.time()
+    any_error = False
+    
     pdbfile_path = prefix + "-1.pdb"
     fitfile_path = prefix + ".fit"
     while (1):
@@ -161,10 +177,22 @@ def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, 
             time.sleep(1)
 
         # exceed 15 minutes then enforce to terminate this script execution
-        if time.time() - start_time > 900:
+        time_limit = 900
+        if time.time() - start_time > time_limit:            
+            msg = 'Error: there is no outfile from datgnom after waiting for %s seconds' % time_limit
+            print msg
+            log.error(msg + '\nPrefix: ' + prefix)
+            any_error = True
             break
-      
 
+    if any_error:
+        sys.exit(2)
+      
+def excInfo(exc_info):
+    exc_type, exc_value, exc_traceback = exc_info[:3]
+    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    msg = ''.join('!! ' + line for line in lines)
+    return msg
 
 def usage():
     print 'Usage: %s [OPTIONS] -p /full/path/filename -i /full/path/filename_0.in -o /full/path/filename.out -m slow -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py -c /full/path/configfile \n' % (sys.argv[0])

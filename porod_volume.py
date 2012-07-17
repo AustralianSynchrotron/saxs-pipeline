@@ -3,6 +3,19 @@
 import getopt
 import subprocess
 import sys
+import os
+import traceback
+
+# Set logging
+import logging
+path = str(os.path.abspath(sys.argv[0]))
+logfile = path[:path.rfind('/')] + '/porod_volume.log'
+log = logging.getLogger(logfile)
+hdlr = logging.StreamHandler(sys.stderr)
+formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+hdlr.setFormatter(formatter)
+log.addHandler(hdlr)
+log.setLevel(2)
 
 def main():
     datfile = ""
@@ -54,11 +67,16 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     # automatically computes Rg and I(0) using the Guinier approximation, 
     # estimates data quality, finds the beginning of the useful data range.
     print '#---- autorg -----------------------#'
-    command_list = ['autorg', '-f', 'ssv', datfile]
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    print ' '.join(command_list)
-    print output
+    try:
+        command_list = ['autorg', '-f', 'ssv', datfile]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        print ' '.join(command_list)
+        print output
+    except Exception, e:
+        msg = excInfo(sys.exc_info())
+        print msg
+        log.error("AUTORG: " + msg + '\nDatfile: ' + datfile)
         
     # estimates Dmax, computes the distance distribution function p(r) and the 
     # regularized scattering curve.
@@ -70,10 +88,10 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     
     # get file name
     #eg: file="sample.dat" if input file is /input_path/sample.dat
-    file = datfile.split('/')[-1] 
-    if file.endswith('.dat'):
+    f = datfile.split('/')[-1] 
+    if f.endswith('.dat'):
         #eg: filename="sample" if input file is /input_path/sample.dat
-            filename = file[:-4] 
+            filename = f[:-4] 
     
     if not autorg_data_error:
         valuePoints = output.split(" ")
@@ -86,7 +104,9 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
             else:
                 skip = 0
         except ValueError:
-            print "Error happened when converting skip value into integer."
+            msg = "Error happened when converting skip value into integer."
+            print msg
+            log.error('DATGNOM: ' + msg + '\nDatfile: ' + datfile)
         
         outfile = output_path + filename + '.out'
         command_list = ['datgnom', '-r', str(rg), '-s', str(skip), '-o', outfile, datfile]
@@ -98,6 +118,7 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     else:
         print "Error: AUTORG data error which got zero value in individual field from AUTORG output."
         print "DATGNOM model skipped."
+        log.error("DATGNOM: model skipped due to AUTORG data error." + '\nDatfile: ' + datfile)
       
     # computes Porod volume from the regularised scattering curve.
     print '#---- datporod ---------------------#' 
@@ -110,36 +131,52 @@ def processDatFile(datfile, output_path, ssh_access, scp_dest, harvest_script, c
     else:
         print "Error: AUTORG data error which got zero value in individual field from AUTORG output."
         print "DATPOROD model skipped."
+        log.error("DATPOROD: model skipped due to AUTORG data error." + '\nDatfile: ' + datfile)
   
   
     # create and ssh copy file of porod volume back to production
     print '#---- copy porod volume ------------#'
-    # create file with porod valume value
-    porod_file_path = output_path + filename + '_porod_volume'
-    porod_file = open(porod_file_path, 'w')
-    if not autorg_data_error:
-        value = str(output).strip(' ').split(' ')[0]
-    else:
-        value = "AUTORG DATA ERROR"
-    porod_file.write(value)
-    porod_file.close()
-    # ssh copy file back to production
-    scp_dest_path = ssh_access + ":" + scp_dest
-    command_list = ['scp', porod_file_path, scp_dest_path]
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    print ' '.join(command_list)
-    print '\n'
+    try:
+        # create file with porod valume value
+        porod_file_path = output_path + filename + '_porod_volume'
+        porod_file = open(porod_file_path, 'w')
+        if not autorg_data_error:
+            value = str(output).strip(' ').split(' ')[0]
+        else:
+            value = "AUTORG DATA ERROR"
+        porod_file.write(value)
+        porod_file.close()
+        # ssh copy file back to production
+        scp_dest_path = ssh_access + ":" + scp_dest
+        command_list = ['scp', porod_file_path, scp_dest_path]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        print ' '.join(command_list)
+        print '\n'
+    except Exception, e:
+        msg = excInfo(sys.exc_info())
+        print msg
+        log.error("Copy POROD volume file: " + msg + '\nDatfile: ' + datfile)
     
     # trigger production harvest script 
     print '#---- production harvest -----------#'
-    file_to_harvest = scp_dest + filename + '_porod_volume'
-    command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'porod_volume', '-f', file_to_harvest, '-c', config]
-    process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, error_output) = process.communicate()
-    print ' '.join(command_list)
-    print ''
+    try:
+        file_to_harvest = scp_dest + filename + '_porod_volume'
+        command_list = ['ssh', ssh_access, 'python', harvest_script, '-t', 'porod_volume', '-f', file_to_harvest, '-c', config]
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (output, error_output) = process.communicate()
+        print ' '.join(command_list)
+        print ''
+    except Exception, e:
+        msg = excInfo(sys.exc_info())
+        print msg
+        log.error("Production Harvest: " + msg + '\nDatfile: ' + datfile)
 
+def excInfo(exc_info):
+    exc_type, exc_value, exc_traceback = exc_info[:3]
+    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    msg = ''.join('!! ' + line for line in lines)
+    return msg
 
 
 def usage():
