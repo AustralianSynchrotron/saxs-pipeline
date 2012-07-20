@@ -195,7 +195,7 @@ def excInfo(exc_info):
     return msg
 
 def usage():
-    print 'Usage: %s [OPTIONS] -p /full/path/filename -i /full/path/filename_0.in -o /full/path/filename.out -m slow -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py -c /full/path/configfile \n' % (sys.argv[0])
+    print 'Usage: %s [OPTIONS] -p /full/path/filename -i /full/path/filename_0.in -o /full/path/filename.out -m slow -s username@host.domain -d /full/path/data/home -h /full/path/PipelineHarvest.py -c /full/path/configfile \n' % (sys.argv[0])
     print '''
 -p --prefix    Prefix to prepend to output filenames (eg. "prefix"-1.pdb).   
                Should include absolute paths, all directory components must 

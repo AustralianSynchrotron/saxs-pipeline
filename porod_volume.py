@@ -180,7 +180,7 @@ def excInfo(exc_info):
 
 
 def usage():
-    print 'Usage: %s [OPTIONS] -f /full/path/filename.dat -o /output/full/path/ -s username@host.domain -d /full/path/data/home -h /full/path/pipeline_harvest.py -c /full/path/configfile \n' % (sys.argv[0])
+    print 'Usage: %s [OPTIONS] -f /full/path/filename.dat -o /output/full/path/ -s username@host.domain -d /full/path/data/home -h /full/path/PipelineHarvest.py -c /full/path/configfile \n' % (sys.argv[0])
     print '''
 -f --file         The full path of your SAXS experimental data file to be used 
                   for models.
