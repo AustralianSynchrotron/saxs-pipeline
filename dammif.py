@@ -97,17 +97,17 @@ def main():
 def dammif(prefix, outfile, infile, mode, ssh_access, scp_dest, harvest_script, config):
   
     # dammif modelling
-    # dammif --prefix="$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} --mode=interactive --symmetry=P1 --unit=n "$OUTPUT_FILE_PREFIX"_dammif.out < "$OUTPUT_FILE_PREFIX"_0.in 
+    # dammif --prefix="$OUTPUT_FILE_PREFIX"_${PBS_ARRAYID} --mode=interactive --symmetry=P1 --unit=a "$OUTPUT_FILE_PREFIX"_dammif.out < "$OUTPUT_FILE_PREFIX"_0.in 
     print '#---- dammif modelling -------#'
     if mode.upper() == "SLOW":
-        command_list = ['dammif', '--prefix=%s' % prefix, '--mode=slow', '--symmetry=P1', '--unit=n', outfile]
+        command_list = ['dammif', '--prefix=%s' % prefix, '--mode=slow', '--symmetry=P1', '--unit=a', outfile]
         process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output, error_output) = process.communicate()
         print ' '.join(command_list)
         print '\n'
     elif mode.upper() == "INTERACTIVE":
         # replace subprocess.Popen with os.system due to a getopt error of "too many arguments".
-        command = 'dammif --prefix=%s --mode=interactive --symmetry=P1 --unit=n %s < %s' % (prefix, outfile, infile)
+        command = 'dammif --prefix=%s --mode=interactive --symmetry=P1 --unit=a %s < %s' % (prefix, outfile, infile)
         os.system(command)
         print command
         print '\n'
